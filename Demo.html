@@ -8,124 +8,93 @@
     <title>Document</title>
 </head>
 
-<script>
-    function toArray(vector){
-        let array = [];
-        for(let i=0; i<vector.size();i++){
-            array.push(vector.get(i));
-        }
-        return array;
-    }
 
-    function getVector(arr){
+<script src="./JavaScriptAlternative/Vector3.js"></script>
+<script src="./Utility/ExecutionTime.js"></script>
+
+<script>
+    let values = [];
+    const vectorsCount = 10000;
+    const maxValue = 9999;
+
+    function generateVectorValues(amount, maxValue) {
+        for (let i = 0; i < amount * 3; i++) {
+            values.push(Math.floor(Math.random() * maxValue));
+        }
+    }
+    generateVectorValues(vectorsCount, maxValue);
+    console.log(values);
+
+
+
+
+    // function toArray(vector) {
+    //     let array = [];
+    //     for (let i = 0; i < vector.size(); i++) {
+    //         array.push(vector.get(i));
+    //     }
+    //     return array;
+    // }
+
+    function getVector(arr) {
         var vec = new Module.VectorFloat();
         for (var i = 0; i < arr.length; i++) {
             vec.push_back(arr[i]);
         }
         return vec;
     }
-
-
     var Module = {
         onRuntimeInitialized: function () {
-            let vector = new Module["Vector3"](3,4,12);
+            var arr1 = new Float32Array(values);
+            let performance = new Module["PerformanceTest"](getVector(arr1));
 
-            var arr1 = new Float32Array([1,2,3,4,1,1,2,3,2,1,1,4,1,2,3,1]);
-            var arr2 = new Float32Array([5,2,3,4,1,3,2,3,2,1,1,4,1,2,15,1]);
+            console.log("Big Function WASm");
+            ExecutionTime.TestTime(() => {
 
-            let matrix4 = new Module["Matrix4"](getVector(arr1));
-            let matrix1 = new Module["Matrix4"](getVector(arr2));
-            let matrix2 = Module.Matrix4.Identity();
-            let result = matrix4.MultiplyMatrix(matrix2); 
+                performance.SumVectors();
+            })
+            // let vector = new Module["Vector3"](3, 4, 12);
 
-            let mat4Xmat1 = matrix4.MultiplyMatrix(matrix1);
-            let scaled = matrix4.MultiplyValue(6.0);
-            
-            
+            // var arr1 = new Float32Array([1, 2, 3, 4, 1, 1, 2, 3, 2, 1, 1, 4, 1, 2, 3, 1]);
+            // var arr2 = new Float32Array([5, 2, 3, 4, 1, 3, 2, 3, 2, 1, 1, 4, 1, 2, 15, 1]);
 
-            
-            console.log(toArray(matrix4.values));
-            console.log(toArray(matrix1.values));
-            console.log(toArray(mat4Xmat1.values));
-            console.log(toArray(scaled.values));
+            // let matrix4 = new Module["Matrix4"](getVector(arr1));
+            // let matrix1 = new Module["Matrix4"](getVector(arr2));
+            // let matrix2 = Module.Matrix4.Identity();
+            // let result = matrix4.MultiplyMatrix(matrix2);
 
-            // console.log(toArray(matrix2.values));
-            // console.log(toArray(result.values));
+            // let mat4Xmat1 = matrix4.MultiplyMatrix(matrix1);
+            // let scaled = matrix4.MultiplyValue(6.0);
 
+            // console.log(toArray(matrix4.values));
+            // console.log(toArray(matrix1.values));
+            // console.log(toArray(mat4Xmat1.values));
+            // console.log(toArray(scaled.values));
 
+            console.log("Wasm From Js");
+            ExecutionTime.TestTime(() => {
 
-
-            // let matrix2 = new Module["Matrix4"](vector,vector,vector,vector);
-
-
-            // let identity = Module["Matrix4"]["Identity"]();
-
-            // let t = identity.ScaleFloat(2);
-            //printArray(matrix4.values);
-
-            
-
-            // console.log(Module.Matrix4);
-            // printArray(identity.values);
-
-            // // let res = matrix4.Add(matrix2);
-            // console.log(matrix4);
-            // printArray(matrix4.values);
-            // printArray(matrix2.values);
-
-
-            // console.log(matrix4.getVector());
-
-
-            // let vector = new Module["VectorFloat"]();
-            // console.log(vector);
-            // vector.push_back(20);
-            // vector.push_back(220);
-            // vector.push_back(220);
-            // vector.push_back(240);
-            // vector.push_back(20);
-            // vector.push_back(230);
-
-            // console.log(vector);
-
-
-
-            
-
-        
-
-            // console.log(Module.getValue(Matrix.$$.ptr));
-            // for(let i=0;i<ln;i++){
-            //     console.log(Module.getValue(matrixIndexStart + sz*i, 'float'));
-            // }
-            // console.log(matrixIndexStart);
-            
-            // let position0 = new Module["Vector3"]();
-            // let position1 = new Module["Vector3"](-4,5,2);
-            // let position2 = new Module["Vector3"](position1);
-
-            // console.log(position0);
-            // console.log(position1);
-            // console.log(position2);
-
-
-            // let scaledVector = position1.Scale(0);
-            // let position3 = new Module["Vector3"](position1);
-            // let position4 = position2.Add(position3);
-
-            // let normalizedPosition1 = position1.Normalized();
-
-            // console.log(position1);
-            // console.log(position3);
-
-            // position1.delete();
-            // position2.delete();
-            // position3.delete();
-            // position4.delete();
+                for (let i = 0; i < values.length - 3; i += 3) {
+                    let vec2 = new Module["Vector3"](values[i], values[i + 1], values[i + 2]);
+                    let vec3 = new Module["Vector3"](values[i + 3], values[i + 4], values[i + 5]);
+                    let magnitude = vec2.Subtract(vec3).Magnitude() > 5;
+                }
+            })
         }
     };
+
+
+    console.log("Pure Js");
+    ExecutionTime.TestTime(() => {
+
+        for (let i = 0; i < values.length - 3; i += 3) {
+            let vec2 = new Vector3(values[i], values[i + 1], values[i + 2]);
+            let vec3 = new Vector3(values[i + 3], values[i + 4], values[i + 5]);
+
+            let magnitude = vec2.Subtract(vec3).Magnitude() > 5;
+        }
+    })
 </script>
 <script src="./Math/Math.js"></script>
-<!-- <script src="./Math/Vector3.js"></script> -->
 
 </html>

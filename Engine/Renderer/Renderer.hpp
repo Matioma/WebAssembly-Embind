@@ -18,7 +18,7 @@ class Renderer{
 
     public:
         Renderer();
-        void newContext (int width, int height, std::string id, int index);
+        void CreateContext (int width, int height, std::string id, int index);
         void LoadMaterial(std::string vertexSource, std::string fragmentSource);
         void run();
 };

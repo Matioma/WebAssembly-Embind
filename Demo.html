@@ -6,10 +6,40 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.7.0/dist/css/uikit.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.7.0/dist/js/uikit.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.7.0/dist/js/uikit-icons.min.js"></script>
 </head>
 
 <body>
-    <span id="canvasContainer"></span>
+
+
+    <div class="uk-flex .uk-flex-center">
+        <section id="canvasContainer">
+        </section>
+        <div class="uk-container">
+            <div class="js-upload fragment-upload uk-placeholder uk-text-center">
+                <span uk-icon="icon: cloud-upload"></span>
+                <span class="uk-text-middle">Load Vertex Shader by dropping them here or</span>
+                <div uk-form-custom>
+                    <input id="vertex-shader" type="file">
+                    <span class="uk-link">selecting one</span>
+                </div>
+            </div>
+            <div class="js-upload uk-placeholder uk-text-center">
+                <span uk-icon="icon: cloud-upload"></span>
+                <span class="uk-text-middle">Load Fragment Shader by dropping them here or</span>
+                <div uk-form-custom>
+                    <input id="fragment-shader" type="file">
+                    <span class="uk-link">selecting one</span>
+                </div>
+            </div>
+
+            <!-- <progress id="js-progressbar" class="uk-progress" value="0" max="100" hidden></progress> -->
+            <button id="RenderBtn" class="uk-button uk-button-primary">Render</button>
+        </div>
+    </div>
 </body>
 
 <script src="./JavaScriptAlternative/Vector3.js"></script>
@@ -18,7 +48,7 @@
 <script>
     var Module = {
         onRuntimeInitialized: function () {
-            let Engine = new Module["Renderer"]();
+            let Renderer = new Module["Renderer"]();
 
             const createCanvas = (id, index, width, height) => {
                 const canvas = document.createElement("canvas")
@@ -27,13 +57,125 @@
                 canvas.height = height
                 canvasContainer.appendChild(canvas)
                 const context = canvas.getContext("webgl2")
-                Engine.CreateContext(width, height, id, index)
+                Renderer.CreateContext(width, height, id, index)
             };
-            createCanvas("textureLoad", 0, 150, 150);
-            Engine.Run();
+            createCanvas("FirstCanvas", 0, 300, 300);
+            // Renderer.Run();
+
+
+            document.getElementById("RenderBtn").addEventListener("click", () => {
+                Renderer.LoadMaterial(vertexSource, fragmentSource);
+                Renderer.Run();
+            });
         }
     };
+    const readUploadedFileAsText = (inputFile) => {
+        const temporaryFileReader = new FileReader();
 
+        return new Promise((resolve, reject) => {
+            temporaryFileReader.onerror = () => {
+                temporaryFileReader.abort();
+                reject(new DOMException("Problem parsing input file."));
+            };
+
+            temporaryFileReader.onload = () => {
+                resolve(temporaryFileReader.result);
+            };
+            temporaryFileReader.readAsText(inputFile);
+        });
+    };
+
+
+    const handleUpload = async (event) => {
+        const file = event.target.files[0];
+
+        try {
+            const fileContents = await readUploadedFileAsText(file);
+            // console.log(fileContents);
+            return fileContents;
+        } catch (e) {
+            console.warn(e.message)
+        }
+    }
+
+    let fragmentSource;
+    let vertexSource;
+
+
+
+
+    document.getElementById("vertex-shader").addEventListener("change", (ev) => {
+        handleUpload(ev).then(res => {
+            vertexSource = res;
+        });
+        // console.log(vertexSource);
+    });
+
+    document.getElementById("fragment-shader").addEventListener("change", (ev) => {
+        handleUpload(ev).then(res => {
+            fragmentSource = res;
+        });
+        // console.log(fragmentSource);
+    });
+
+    // var bar = document.getElementById('js-progressbar');
+
+    // UIkit.uploadDrop('.fragment-upload', {
+    //     url: '',
+    //     multiple: true,
+
+    //     beforeSend: function () {
+    //         console.log('beforeSend', arguments);
+    //     },
+    //     beforeAll: function () {
+    //         console.log('beforeAll', arguments);
+    //     },
+    //     load: function () {
+    //         console.log('load', arguments);
+    //     },
+    //     error: function () {
+    //         console.log('error', arguments);
+    //     },
+    //     complete: function () {
+    //         console.log('complete', arguments);
+    //     },
+
+    //     loadStart: function (e) {
+    //         console.log('loadStart', arguments);
+
+    //         bar.removeAttribute('hidden');
+    //         bar.max = e.total;
+    //         bar.value = e.loaded;
+    //     },
+
+    //     progress: function (e) {
+    //         console.log('progress', arguments);
+
+    //         bar.max = e.total;
+    //         bar.value = e.loaded;
+    //     },
+
+    //     loadEnd: function (e) {
+    //         console.log('loadEnd', arguments);
+
+    //         bar.max = e.total;
+    //         bar.value = e.loaded;
+    //         console.log(e.target);
+
+    //         displayShader(document.getElementById("vertex-shader"));
+    //     },
+
+    //     completeAll: function () {
+    //         console.log('completeAll', arguments);
+
+    //         setTimeout(function () {
+    //             bar.setAttribute('hidden', 'hidden');
+    //         }, 1000);
+
+    //         alert('Upload Completed');
+    //     }
+
+    // });
 
 
     // let values = [];

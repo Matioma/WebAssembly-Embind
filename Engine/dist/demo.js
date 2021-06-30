@@ -6392,8 +6392,42 @@ var ASM_CONSTS = {
       GLctx.attachShader(GL.programs[program], GL.shaders[shader]);
     }
 
-  function _glBindAttribLocation(program, index, name) {
-      GLctx.bindAttribLocation(GL.programs[program], index, UTF8ToString(name));
+  function _glBindBuffer(target, buffer) {
+      if (target == 0x8892 /*GL_ARRAY_BUFFER*/) {
+        GLctx.currentArrayBufferBinding = buffer;
+      } else if (target == 0x8893 /*GL_ELEMENT_ARRAY_BUFFER*/) {
+        GLctx.currentElementArrayBufferBinding = buffer;
+      }
+  
+      if (target == 0x88EB /*GL_PIXEL_PACK_BUFFER*/) {
+        // In WebGL 2 glReadPixels entry point, we need to use a different WebGL 2 API function call when a buffer is bound to
+        // GL_PIXEL_PACK_BUFFER_BINDING point, so must keep track whether that binding point is non-null to know what is
+        // the proper API function to call.
+        GLctx.currentPixelPackBufferBinding = buffer;
+      } else if (target == 0x88EC /*GL_PIXEL_UNPACK_BUFFER*/) {
+        // In WebGL 2 gl(Compressed)Tex(Sub)Image[23]D entry points, we need to
+        // use a different WebGL 2 API function call when a buffer is bound to
+        // GL_PIXEL_UNPACK_BUFFER_BINDING point, so must keep track whether that
+        // binding point is non-null to know what is the proper API function to
+        // call.
+        GLctx.currentPixelUnpackBufferBinding = buffer;
+      }
+      GLctx.bindBuffer(target, GL.buffers[buffer]);
+    }
+
+  function _glBufferData(target, size, data, usage) {
+  
+      if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
+        if (data) {
+          GLctx.bufferData(target, HEAPU8, usage, data, size);
+        } else {
+          GLctx.bufferData(target, size, usage);
+        }
+      } else {
+        // N.b. here first form specifies a heap subarray, second form an integer size, so the ?: code here is polymorphic. It is advised to avoid
+        // randomly mixing both uses in calling code, to avoid any potential JS engine JIT issues.
+        GLctx.bufferData(target, data ? HEAPU8.subarray(data, data+size) : size, usage);
+      }
     }
 
   function _glClear(x0) { GLctx['clear'](x0) }
@@ -6421,6 +6455,51 @@ var ASM_CONSTS = {
       GL.shaders[id] = GLctx.createShader(shaderType);
   
       return id;
+    }
+
+  function _glDeleteShader(id) {
+      if (!id) return;
+      var shader = GL.shaders[id];
+      if (!shader) { // glDeleteShader actually signals an error when deleting a nonexisting object, unlike some other GL delete functions.
+        GL.recordError(0x501 /* GL_INVALID_VALUE */);
+        return;
+      }
+      GLctx.deleteShader(shader);
+      GL.shaders[id] = null;
+    }
+
+  function _glDrawArrays(mode, first, count) {
+      // bind any client-side buffers
+      GL.preDrawHandleClientVertexAttribBindings(first + count);
+  
+      GLctx.drawArrays(mode, first, count);
+  
+      GL.postDrawHandleClientVertexAttribBindings();
+    }
+
+  function _glEnableVertexAttribArray(index) {
+      var cb = GL.currentContext.clientBuffers[index];
+      cb.enabled = true;
+      GLctx.enableVertexAttribArray(index);
+    }
+
+  function __glGenObject(n, buffers, createFunction, objectTable
+      ) {
+      for (var i = 0; i < n; i++) {
+        var buffer = GLctx[createFunction]();
+        var id = buffer && GL.getNewId(objectTable);
+        if (buffer) {
+          buffer.name = id;
+          objectTable[id] = buffer;
+        } else {
+          GL.recordError(0x502 /* GL_INVALID_OPERATION */);
+        }
+        HEAP32[(((buffers)+(i*4))>>2)] = id;
+      }
+    }
+  function _glGenBuffers(n, buffers) {
+      __glGenObject(n, buffers, 'createBuffer', GL.buffers
+        );
     }
 
   function _glGetShaderInfoLog(shader, maxLength, length, infoLog) {
@@ -6482,6 +6561,24 @@ var ASM_CONSTS = {
 
   function _glValidateProgram(program) {
       GLctx.validateProgram(GL.programs[program]);
+    }
+
+  function _glVertexAttribPointer(index, size, type, normalized, stride, ptr) {
+      var cb = GL.currentContext.clientBuffers[index];
+      if (!GLctx.currentArrayBufferBinding) {
+        cb.size = size;
+        cb.type = type;
+        cb.normalized = normalized;
+        cb.stride = stride;
+        cb.ptr = ptr;
+        cb.clientside = true;
+        cb.vertexAttribPointerAdaptor = function(index, size, type, normalized, stride, ptr) {
+          this.vertexAttribPointer(index, size, type, normalized, stride, ptr);
+        };
+        return;
+      }
+      cb.clientside = false;
+      GLctx.vertexAttribPointer(index, size, type, !!normalized, stride, ptr);
     }
 
   function _setTempRet0(val) {
@@ -6959,18 +7056,24 @@ var asmLibraryArg = {
   "fd_seek": _fd_seek,
   "fd_write": _fd_write,
   "glAttachShader": _glAttachShader,
-  "glBindAttribLocation": _glBindAttribLocation,
+  "glBindBuffer": _glBindBuffer,
+  "glBufferData": _glBufferData,
   "glClear": _glClear,
   "glClearColor": _glClearColor,
   "glCompileShader": _glCompileShader,
   "glCreateProgram": _glCreateProgram,
   "glCreateShader": _glCreateShader,
+  "glDeleteShader": _glDeleteShader,
+  "glDrawArrays": _glDrawArrays,
+  "glEnableVertexAttribArray": _glEnableVertexAttribArray,
+  "glGenBuffers": _glGenBuffers,
   "glGetShaderInfoLog": _glGetShaderInfoLog,
   "glGetShaderiv": _glGetShaderiv,
   "glLinkProgram": _glLinkProgram,
   "glShaderSource": _glShaderSource,
   "glUseProgram": _glUseProgram,
   "glValidateProgram": _glValidateProgram,
+  "glVertexAttribPointer": _glVertexAttribPointer,
   "setTempRet0": _setTempRet0,
   "strftime_l": _strftime_l
 };

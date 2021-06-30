@@ -13,9 +13,12 @@ using namespace emscripten;
 
 
 class Renderer{
-    Context* context;
+    private:
+        Context* context;
+
     public:
         Renderer();
         void newContext (int width, int height, std::string id, int index);
+        void LoadMaterial(std::string vertexSource, std::string fragmentSource);
         void run();
 };

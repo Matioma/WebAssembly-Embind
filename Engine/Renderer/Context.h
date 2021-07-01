@@ -1,6 +1,8 @@
 #include <string>
 #include "Material.hpp"
+#include "Mesh.hpp"
 #include "iostream"
+#include <vector>
 
 class Context {
 public:
@@ -9,11 +11,12 @@ public:
 
     void run ();
     void LoadMaterial(std::string &vertexSource, std::string &fragmentSource);
-
+    void DrawMesh(Mesh& mesh);
 private:
 
 
     Material* material;
+    Mesh* mesh;
 
     int width;
     int height;

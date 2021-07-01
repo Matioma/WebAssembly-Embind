@@ -62,3 +62,11 @@ void Material::createProgram(std::string &vertexSource, std::string &fragmentSou
     glDeleteShader(_vertexShader);
     glDeleteShader(_fragmentShader);  
 }
+
+
+GLuint Material::getAttribLocation (const std::string& name){
+     return glGetAttribLocation  (_programObject, name.c_str());
+};
+GLuint Material::getUniformLoaction(const std::string& name){
+    return glGetUniformLocation  (_programObject, name.c_str());
+};

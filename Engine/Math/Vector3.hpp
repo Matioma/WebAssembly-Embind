@@ -2,10 +2,11 @@
 #define MY_VECTOR3
 
 #include <../emscripten/bind.h>
-using namespace emscripten;
-#include <mutex>
 
-class Vector3 {
+
+using namespace emscripten;
+
+struct Vector3 {
     public:
         float x;
         float y;

@@ -2,13 +2,13 @@
 #include "iostream"
 
 
-float vertices[] = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
-};  
+// float vertices[] = {
+//     -0.5f, -0.5f, 0.0f,
+//      0.5f, -0.5f, 0.0f,
+//      0.0f,  0.5f, 0.0f
+// };  
 
-Mesh::Mesh( std::vector<float>& pVertices){
+Mesh::Mesh( std::vector<float>& pVertices):vertices(&pVertices[0]){
     for(int i=0; i< pVertices.size();i+=3){
         std::cout<<pVertices.at(i) << ";" << pVertices.at(i+1) << ";" <<pVertices.at(i+2) <<std::endl;
         _verticies.push_back(Vector3(pVertices.at(i),pVertices.at(i+1),pVertices.at(i+2)));
@@ -25,8 +25,9 @@ void Mesh::bufferData(){
     // glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     glGenBuffers(1, &_vertexBuffer);  
-    glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);    
-    glBufferData(GL_ARRAY_BUFFER,sizeof(vertices),vertices,GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);   
+    std::cout<< sizeof(vertices)<< vertices[8] <<"IT SUCKK!" <<std::endl; 
+    glBufferData(GL_ARRAY_BUFFER,sizeof(vertices)*9,vertices,GL_STATIC_DRAW);
 
     // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     // glEnableVertexAttribArray(0);
@@ -51,6 +52,6 @@ void Mesh::StreamToOpenGL(GLint pVerticiesAttribute){
         glEnableVertexAttribArray(0);
     }
 
-    glDrawArrays(GL_TRIANGLES,0,_verticies.size());
+    glDrawArrays(GL_TRIANGLES,0,3);
     glBindBuffer(GL_ARRAY_BUFFER,0);
 }

@@ -15,7 +15,7 @@ class Mesh{
 
     std::list<Vector3> _verticies;
     // std::vector<float>& vertices;
-    // float* vertices;
+    float* vertices;
 
     unsigned int _vertexBuffer;
 };

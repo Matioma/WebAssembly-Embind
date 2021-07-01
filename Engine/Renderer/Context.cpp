@@ -32,6 +32,13 @@ Context::~Context (void) {
 }
 
 void Context::LoadMaterial(std::string &vertexSource, std::string &fragmentSource){
+    std::cout<<"Loading a new Material \n" <<std::endl;
+    std::cout<<vertexSource <<std::endl;
+    std::cout<<fragmentSource <<std::endl;
+    if(this->material != nullptr){
+        std::cout<<"old material still here, deleting" <<std::endl;
+        delete this->material;
+    }
     this->material = new Material(vertexSource,fragmentSource);
 }
 

@@ -1,5 +1,6 @@
 #include <string>
 #include "Material.hpp"
+#include "iostream"
 
 class Context {
 public:

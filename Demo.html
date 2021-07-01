@@ -13,8 +13,6 @@
 </head>
 
 <body>
-
-
     <div class="uk-flex .uk-flex-center">
         <section id="canvasContainer">
         </section>
@@ -23,7 +21,7 @@
                 <span uk-icon="icon: cloud-upload"></span>
                 <span class="uk-text-middle">Load Vertex Shader by dropping them here or</span>
                 <div uk-form-custom>
-                    <input id="vertex-shader" type="file">
+                    <input id="vertex-shader" type="file" multiple (click)="">
                     <span class="uk-link">selecting one</span>
                 </div>
             </div>
@@ -31,7 +29,7 @@
                 <span uk-icon="icon: cloud-upload"></span>
                 <span class="uk-text-middle">Load Fragment Shader by dropping them here or</span>
                 <div uk-form-custom>
-                    <input id="fragment-shader" type="file">
+                    <input id="fragment-shader" type="file" multiple>
                     <span class="uk-link">selecting one</span>
                 </div>
             </div>
@@ -60,10 +58,12 @@
                 Renderer.CreateContext(width, height, id, index)
             };
             createCanvas("FirstCanvas", 0, 300, 300);
+
             // Renderer.Run();
 
 
             document.getElementById("RenderBtn").addEventListener("click", () => {
+                console.log(fragmentSource);
                 Renderer.LoadMaterial(vertexSource, fragmentSource);
                 Renderer.Run();
             });
@@ -85,13 +85,10 @@
         });
     };
 
-
     const handleUpload = async (event) => {
         const file = event.target.files[0];
-
         try {
             const fileContents = await readUploadedFileAsText(file);
-            // console.log(fileContents);
             return fileContents;
         } catch (e) {
             console.warn(e.message)
@@ -102,21 +99,30 @@
     let vertexSource;
 
 
+    function clearInput(target) {
+        target.value = null;
+    }
 
 
-    document.getElementById("vertex-shader").addEventListener("change", (ev) => {
+    let vertexInput = document.getElementById("vertex-shader");
+    vertexInput.addEventListener("click", (ev) => clearInput(ev.target));
+    vertexInput.addEventListener("input", (ev) => {
         handleUpload(ev).then(res => {
             vertexSource = res;
+
         });
-        // console.log(vertexSource);
     });
 
-    document.getElementById("fragment-shader").addEventListener("change", (ev) => {
+    let fragmentInput = document.getElementById("fragment-shader");
+    fragmentInput.addEventListener("click", (ev) => clearInput(ev.target));
+    fragmentInput.addEventListener("input", (ev) => {
         handleUpload(ev).then(res => {
             fragmentSource = res;
         });
-        // console.log(fragmentSource);
     });
+
+
+
 
     // var bar = document.getElementById('js-progressbar');
 

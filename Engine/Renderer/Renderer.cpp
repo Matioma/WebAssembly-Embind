@@ -2,7 +2,7 @@
 
 
 Renderer::Renderer(){
-    std::cout<<"Cool"<<std::endl;
+    std::cout<<"Renderer Created"<<std::endl;
 }
 
 void Renderer::LoadMaterial(std::string vertexSource, std::string fragmentSource){
@@ -10,11 +10,9 @@ void Renderer::LoadMaterial(std::string vertexSource, std::string fragmentSource
 }
 
 void Renderer::CreateContext(int width, int height, std::string id, int index){
-    std::cout<<"CreateContext " << id <<std::endl;
     this->context = new Context(width, height, id);
 }
 void Renderer::run(){
-    std::cout<<"Run"<<std::endl;
     this->context->run();
 }
 

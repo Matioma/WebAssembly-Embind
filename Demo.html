@@ -33,6 +33,14 @@
                     <span class="uk-link">selecting one</span>
                 </div>
             </div>
+            <div class="js-upload uk-placeholder uk-text-center">
+                <span uk-icon="icon: cloud-upload"></span>
+                <span class="uk-text-middle">Load Obj File by dropping them here or</span>
+                <div uk-form-custom>
+                    <input id="obj-file" type="file" multiple>
+                    <span class="uk-link">selecting one</span>
+                </div>
+            </div>
 
             <!-- <progress id="js-progressbar" class="uk-progress" value="0" max="100" hidden></progress> -->
             <button id="RenderBtn" class="uk-button uk-button-primary">Render</button>
@@ -64,6 +72,7 @@
 
             document.getElementById("RenderBtn").addEventListener("click", () => {
                 // console.log(fragmentSource);
+                Renderer.LoadMeshData(objFile);
                 Renderer.LoadMaterial(vertexSource, fragmentSource);
                 Renderer.Run();
             });
@@ -97,6 +106,7 @@
 
     let fragmentSource;
     let vertexSource;
+    let objFile;
 
 
     function clearInput(target) {
@@ -118,6 +128,14 @@
     fragmentInput.addEventListener("input", (ev) => {
         handleUpload(ev).then(res => {
             fragmentSource = res;
+        });
+    });
+
+    let objFileId = document.getElementById("obj-file");
+    objFileId.addEventListener("click", (ev) => clearInput(ev.target));
+    objFileId.addEventListener("input", (ev) => {
+        handleUpload(ev).then(res => {
+            objFile = res;
         });
     });
 </script>

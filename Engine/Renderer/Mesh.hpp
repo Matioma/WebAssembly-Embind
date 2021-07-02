@@ -10,6 +10,9 @@ class Mesh{
     Mesh( std::vector<float>& vertices);
     void StreamToOpenGL(GLint pVerticiesAttribute);
 
+    static Mesh* MeshFromObj(std::string& meshData);
+
+
     private:
     void bufferData();
 

@@ -11,6 +11,7 @@ public:
 
     void run ();
     void LoadMaterial(std::string &vertexSource, std::string &fragmentSource);
+    void LoadMeshData(std::string &meshData);
     void DrawMesh(Mesh& mesh);
 private:
 

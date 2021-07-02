@@ -1,21 +1,6 @@
 #include "Context.h"
 
-// float vertices[] = {
-//     -0.5f, -0.5f, 0.0f,
-//      0.5f, -0.5f, 0.0f,
-//      0.0f,  0.5f, 0.0f
-// };  
 
-std::vector<float > verticesList={
-   -0.5f, -0.5f, 0.0f,
-    0.5f, -0.5f, 0.0f,
-    0.5f, 0.5f, 0.0f,
-
-    0.5f, 0.5f, 0.0f,
-    -0.5f, 0.5f, 0.0f,
-    -0.5f, -0.5f, 0.0f,
-   
-}; 
 
 
 Context::Context (int w, int h, std::string id) {
@@ -37,7 +22,7 @@ Context::Context (int w, int h, std::string id) {
     context = emscripten_webgl_create_context(sharp_id_str.c_str(), &attrs);
     emscripten_webgl_make_context_current(context);
 
-    mesh = new Mesh(verticesList);
+    // mesh = new Mesh(verticesList);
 }
 
 Context::~Context (void) {
@@ -53,6 +38,10 @@ void Context::LoadMaterial(std::string &vertexSource, std::string &fragmentSourc
         delete this->material;
     }
     this->material = new Material(vertexSource,fragmentSource);
+}
+
+void Context::LoadMeshData(std::string &meshData){
+    this->mesh = Mesh::MeshFromObj(meshData);
 }
 
 

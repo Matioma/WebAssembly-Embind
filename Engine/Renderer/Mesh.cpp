@@ -1,11 +1,26 @@
 #include "./Mesh.hpp"
 #include "iostream"
 
+std::vector<float > verticesList={
+   -0.5f, -0.5f, 0.0f,
+    0.5f, -0.5f, 0.0f,
+    0.5f, 0.5f, 0.0f,
+
+    0.5f, 0.5f, 0.0f,
+    -0.5f, 0.5f, 0.0f,
+    -0.5f, -0.5f, 0.0f,
+   
+}; 
 
 
 Mesh::Mesh( std::vector<float>& pVertices):vertices(&pVertices[0]){
     verticesCount = pVertices.size();
     bufferData();
+}
+
+Mesh* Mesh::MeshFromObj(std::string& meshData){
+    std::cout<<meshData<<std::endl;
+    return new Mesh(verticesList);
 }
 
 void Mesh::bufferData(){

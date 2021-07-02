@@ -14,8 +14,8 @@ class Mesh{
     void bufferData();
 
     std::list<Vector3> _verticies;
-    // std::vector<float>& vertices;
     float* vertices;
+    int verticesCount;
 
     unsigned int _vertexBuffer;
 };

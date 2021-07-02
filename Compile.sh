@@ -34,5 +34,3 @@ do
 	esac
 done
 
-echo ${emsdk_shFile};
-

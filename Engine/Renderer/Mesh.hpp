@@ -11,9 +11,9 @@ class Mesh{
         std::vector<float>& vertices,
         std::vector<float>& pNormals,
         std::vector<float>& pUvs,
-        std::vector<float>& indicies);
+        std::vector<unsigned>& indicies);
 
-    void StreamToOpenGL(GLint pVerticiesAttribute);
+    void StreamToOpenGL(GLint pVerticiesAttribute, GLint pNoramlsAttribute, GLint pUVsAttribute);
 
     static Mesh* MeshFromObj(std::string& meshData);
 
@@ -24,7 +24,7 @@ class Mesh{
     float* vertices;
     int verticesCount;
 
-    float* indicies;
+    unsigned* indicies;
     int indiciesCount;
 
     float* _normals;
@@ -33,5 +33,23 @@ class Mesh{
     float* _uvs;
     int uvsCount;
 
-    unsigned int _vertexBuffer;
+    //BUffers
+    unsigned int _vertexBufferid;
+    unsigned int _normalsBufferid;
+    unsigned int _uvsBufferid;
+    unsigned int _indexBufferid;
+
+    class FaceIndexTriplet {
+        public:
+            unsigned v; //vertex
+            unsigned uv;//uv
+            unsigned n; //normal
+            FaceIndexTriplet( unsigned pV, unsigned pUV, unsigned pN )
+            :	v(pV),uv(pUV),n(pN) {
+            }
+            //needed for use as key in map
+            bool operator<(const FaceIndexTriplet other) const{
+                return memcmp((void*)this, (void*)&other, sizeof(FaceIndexTriplet))>0;
+            }
+    };
 };

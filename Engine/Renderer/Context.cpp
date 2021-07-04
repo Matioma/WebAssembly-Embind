@@ -85,7 +85,9 @@ void Context::DrawMesh(Mesh& mesh){
 
     this->material->Use();
     mesh.StreamToOpenGL(
-        this->material->getAttribLocation("aPos")
+        this->material->getAttribLocation("aPos"),
+        this->material->getAttribLocation("aNormal"),
+        this->material->getAttribLocation("aUV")
     );
 
     // glDrawArrays(GL_TRIANGLES,0,sizeof(vertices));

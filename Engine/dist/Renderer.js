@@ -6686,13 +6686,29 @@ var ASM_CONSTS = {
       GL.shaders[id] = null;
     }
 
-  function _glDrawArrays(mode, first, count) {
+  function _glDrawElements(mode, count, type, indices) {
+      var buf;
+      if (!GLctx.currentElementArrayBufferBinding) {
+        var size = GL.calcBufLength(1, type, 0, count);
+        buf = GL.getTempIndexBuffer(size);
+        GLctx.bindBuffer(0x8893 /*GL_ELEMENT_ARRAY_BUFFER*/, buf);
+        GLctx.bufferSubData(0x8893 /*GL_ELEMENT_ARRAY_BUFFER*/,
+                                 0,
+                                 HEAPU8.subarray(indices, indices + size));
+        // the index is now 0
+        indices = 0;
+      }
+  
       // bind any client-side buffers
-      GL.preDrawHandleClientVertexAttribBindings(first + count);
+      GL.preDrawHandleClientVertexAttribBindings(count);
   
-      GLctx.drawArrays(mode, first, count);
+      GLctx.drawElements(mode, count, type, indices);
   
-      GL.postDrawHandleClientVertexAttribBindings();
+      GL.postDrawHandleClientVertexAttribBindings(count);
+  
+      if (!GLctx.currentElementArrayBufferBinding) {
+        GLctx.bindBuffer(0x8893 /*GL_ELEMENT_ARRAY_BUFFER*/, null);
+      }
     }
 
   function _glEnableVertexAttribArray(index) {
@@ -7290,7 +7306,7 @@ var asmLibraryArg = {
   "glCreateProgram": _glCreateProgram,
   "glCreateShader": _glCreateShader,
   "glDeleteShader": _glDeleteShader,
-  "glDrawArrays": _glDrawArrays,
+  "glDrawElements": _glDrawElements,
   "glEnableVertexAttribArray": _glEnableVertexAttribArray,
   "glGenBuffers": _glGenBuffers,
   "glGetAttribLocation": _glGetAttribLocation,

@@ -7,7 +7,12 @@
 
 class Mesh{
     public:
-    Mesh( std::vector<float>& vertices);
+    Mesh( 
+        std::vector<float>& vertices,
+        std::vector<float>& pNormals,
+        std::vector<float>& pUvs,
+        std::vector<float>& indicies);
+
     void StreamToOpenGL(GLint pVerticiesAttribute);
 
     static Mesh* MeshFromObj(std::string& meshData);
@@ -16,9 +21,17 @@ class Mesh{
     private:
     void bufferData();
 
-    std::list<Vector3> _verticies;
     float* vertices;
     int verticesCount;
+
+    float* indicies;
+    int indiciesCount;
+
+    float* _normals;
+    int normalsCount;
+
+    float* _uvs;
+    int uvsCount;
 
     unsigned int _vertexBuffer;
 };

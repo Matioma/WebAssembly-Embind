@@ -6774,6 +6774,89 @@ var ASM_CONSTS = {
       }
     }
 
+  /** @suppress {checkTypes} */
+  function jstoi_q(str) {
+      return parseInt(str);
+    }
+  function _glGetUniformLocation(program, name) {
+      // Returns the index of '[' character in an uniform that represents an array of uniforms (e.g. colors[10])
+      // Closure does counterproductive inlining: https://github.com/google/closure-compiler/issues/3203, so prevent
+      // inlining manually.
+      /** @noinline */
+      function getLeftBracePos(name) {
+        return name.slice(-1) == ']' && name.lastIndexOf('[');
+      }
+  
+      name = UTF8ToString(name);
+  
+      program = GL.programs[program];
+      var uniformLocsById = program.uniformLocsById; // Maps GLuint -> WebGLUniformLocation
+      var uniformSizeAndIdsByName = program.uniformSizeAndIdsByName; // Maps name -> [uniform array length, GLuint]
+      var i, j;
+      var arrayIndex = 0;
+      var uniformBaseName = name;
+  
+      // Invariant: when populating integer IDs for uniform locations, we must maintain the precondition that
+      // arrays reside in contiguous addresses, i.e. for a 'vec4 colors[10];', colors[4] must be at location colors[0]+4.
+      // However, user might call glGetUniformLocation(program, "colors") for an array, so we cannot discover based on the user
+      // input arguments whether the uniform we are dealing with is an array. The only way to discover which uniforms are arrays
+      // is to enumerate over all the active uniforms in the program.
+      var leftBrace = getLeftBracePos(name);
+  
+      // On the first time invocation of glGetUniformLocation on this shader program:
+      // initialize cache data structures and discover which uniforms are arrays.
+      if (!uniformLocsById) {
+        // maps GLint integer locations to WebGLUniformLocations
+        program.uniformLocsById = uniformLocsById = {};
+        // maps integer locations back to uniform name strings, so that we can lazily fetch uniform array locations
+        program.uniformArrayNamesById = {};
+  
+        for (i = 0; i < GLctx.getProgramParameter(program, 0x8B86/*GL_ACTIVE_UNIFORMS*/); ++i) {
+          var u = GLctx.getActiveUniform(program, i);
+          var nm = u.name;
+          var sz = u.size;
+          var lb = getLeftBracePos(nm);
+          var arrayName = lb > 0 ? nm.slice(0, lb) : nm;
+  
+          // Assign a new location.
+          var id = program.uniformIdCounter;
+          program.uniformIdCounter += sz;
+          // Eagerly get the location of the uniformArray[0] base element.
+          // The remaining indices >0 will be left for lazy evaluation to
+          // improve performance. Those may never be needed to fetch, if the
+          // application fills arrays always in full starting from the first
+          // element of the array.
+          uniformSizeAndIdsByName[arrayName] = [sz, id];
+  
+          // Store placeholder integers in place that highlight that these
+          // >0 index locations are array indices pending population.
+          for(j = 0; j < sz; ++j) {
+            uniformLocsById[id] = j;
+            program.uniformArrayNamesById[id++] = arrayName;
+          }
+        }
+      }
+  
+      // If user passed an array accessor "[index]", parse the array index off the accessor.
+      if (leftBrace > 0) {
+        arrayIndex = jstoi_q(name.slice(leftBrace + 1)) >>> 0; // "index]", coerce parseInt(']') with >>>0 to treat "foo[]" as "foo[0]" and foo[-1] as unsigned out-of-bounds.
+        uniformBaseName = name.slice(0, leftBrace);
+      }
+  
+      // Have we cached the location of this uniform before?
+      var sizeAndId = uniformSizeAndIdsByName[uniformBaseName]; // A pair [array length, GLint of the uniform location]
+  
+      // If an uniform with this name exists, and if its index is within the array limits (if it's even an array),
+      // query the WebGLlocation, or return an existing cached location.
+      if (sizeAndId && arrayIndex < sizeAndId[0]) {
+        arrayIndex += sizeAndId[1]; // Add the base location of the uniform to the array index offset.
+        if ((uniformLocsById[arrayIndex] = uniformLocsById[arrayIndex] || GLctx.getUniformLocation(program, name))) {
+          return arrayIndex;
+        }
+      }
+      return -1;
+    }
+
   function _glLinkProgram(program) {
       program = GL.programs[program];
       GLctx.linkProgram(program);
@@ -6787,6 +6870,23 @@ var ASM_CONSTS = {
       var source = GL.getSource(shader, count, string, length);
   
       GLctx.shaderSource(GL.shaders[shader], source);
+    }
+
+  function webglGetUniformLocation(location) {
+      var p = GLctx.currentProgram;
+      var webglLoc = p.uniformLocsById[location];
+      // p.uniformLocsById[location] stores either an integer, or a WebGLUniformLocation.
+  
+      // If an integer, we have not yet bound the location, so do it now. The integer value specifies the array index
+      // we should bind to.
+      if (webglLoc >= 0) {
+        p.uniformLocsById[location] = webglLoc = GLctx.getUniformLocation(p, p.uniformArrayNamesById[location] + (webglLoc > 0 ? '[' + webglLoc + ']' : ''));
+      }
+      // Else an already cached WebGLUniformLocation, return it.
+      return webglLoc;
+    }
+  function _glUniform1f(location, v0) {
+      GLctx.uniform1f(webglGetUniformLocation(location), v0);
     }
 
   function _glUseProgram(program) {
@@ -7312,8 +7412,10 @@ var asmLibraryArg = {
   "glGetAttribLocation": _glGetAttribLocation,
   "glGetShaderInfoLog": _glGetShaderInfoLog,
   "glGetShaderiv": _glGetShaderiv,
+  "glGetUniformLocation": _glGetUniformLocation,
   "glLinkProgram": _glLinkProgram,
   "glShaderSource": _glShaderSource,
+  "glUniform1f": _glUniform1f,
   "glUseProgram": _glUseProgram,
   "glValidateProgram": _glValidateProgram,
   "glVertexAttribPointer": _glVertexAttribPointer,

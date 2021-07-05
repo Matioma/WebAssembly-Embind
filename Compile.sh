@@ -9,7 +9,7 @@ output_fileName="Renderer.js"
 
 #list of files to compile
 filesToCompile=(
-"./Engine/Renderer/Renderer.cpp" 
+"./Engine/Renderer/RendererAPI.cpp" 
 "./Engine/Renderer/Material.cpp"
 "./Engine/Renderer/Mesh.cpp" 
 "./Engine/Math/Vector3.cpp")

@@ -1,25 +1,36 @@
-#include <../../emscripten/bind.h>
-#include <GLES2/gl2.h>
-#include <EGL/egl.h>
 #include <string>
-#include <iostream>
+#include "Material.hpp"
+#include "Mesh.hpp"
+#include "iostream"
+#include <vector>
 
-extern "C" {
-    #include "html5.h"
-}
-#include "Context.cpp"
+class Renderer {
+public:
+    Renderer (int width, int height, std::string id);
+    ~Renderer (void);
 
-using namespace emscripten;
+    void Draw (float deltaTime);
+    void LoadMaterial(std::string &vertexSource, std::string &fragmentSource);
+    void LoadMeshData(std::string &meshData);
+    void DrawMesh(Mesh& mesh);
+private:
+    float deltaTime=0;
+    float timer =0;
+
+    Material* material;
+    Mesh* mesh;
+
+    int width;
+    int height;
+
+    GLuint programObject;
+    GLuint vertexShader;
+    GLuint fragmentShader;
 
 
-class Renderer{
-    private:
-        Context* context;
 
-    public:
-        Renderer();
-        void CreateContext (int width, int height, std::string id, int index);
-        void LoadMaterial(std::string vertexSource, std::string fragmentSource);
-        void LoadMeshData(std::string meshData);
-        void run();
+    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context;
 };
+
+
+

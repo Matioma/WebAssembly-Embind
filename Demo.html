@@ -13,7 +13,7 @@
 </head>
 
 <body>
-    <div class="uk-flex .uk-flex-center">
+    <div class="uk-flex .uk-flex-center uk-container">
         <section id="canvasContainer">
         </section>
         <div class="uk-container">
@@ -44,6 +44,7 @@
 
             <!-- <progress id="js-progressbar" class="uk-progress" value="0" max="100" hidden></progress> -->
             <button id="RenderBtn" class="uk-button uk-button-primary">Render</button>
+            <button id="PauseRunBtn" class="uk-button uk-button-primary">Pause/Run</button>
         </div>
     </div>
 </body>
@@ -52,9 +53,16 @@
 <script src="./Utility/ExecutionTime.js"></script>
 
 <script>
+    let uiWorker = new Worker('./webInterface.js');
+    let engineWorker = new Worker("./EngineWorker.js");
+    // engineWorker.postMessage(document);
+    uiWorker.postMessage("cool");
+
+
+    let Renderer;
     var Module = {
         onRuntimeInitialized: function () {
-            let Renderer = new Module["Renderer"]();
+            Renderer = new Module["RendererAPI"]();
 
             const createCanvas = (id, index, width, height) => {
                 const canvas = document.createElement("canvas")
@@ -66,18 +74,57 @@
                 Renderer.CreateContext(width, height, id, index)
             };
             createCanvas("FirstCanvas", 0, 300, 300);
-
-            // Renderer.Run();
-
-
-            document.getElementById("RenderBtn").addEventListener("click", () => {
-                // console.log(fragmentSource);
-                Renderer.LoadMeshData(objFile);
-                Renderer.LoadMaterial(vertexSource, fragmentSource);
-                Renderer.Run();
-            });
         }
     };
+
+
+    let lastTime = (new Date()).getTime();
+    let currentTime = 0;
+    let deltaTime = 0;
+
+    function Update() {
+        if (isRunning) {
+
+            Renderer.Update(deltaTime / 1000.0);
+
+        }
+        currentTime = (new Date()).getTime();
+        deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+        requestAnimationFrame(Update);
+    }
+
+    let isRunning = false;
+
+    function startRenderer() {
+        isRunning = true;
+        requestAnimationFrame(Update);
+    }
+
+    function stopRenderer() {
+        isRunning = false;
+    }
+
+
+
+    document.getElementById("RenderBtn").addEventListener("click", () => {
+        stopRenderer()
+        Renderer.LoadMeshData(objFile);
+        Renderer.LoadMaterial(vertexSource, fragmentSource);
+        startRenderer();
+    })
+    document.getElementById("PauseRunBtn").addEventListener("click", () => {
+        // isRunning = !isRunning;
+        if (!isRunning) {
+            startRenderer();
+        } else {
+            stopRenderer();
+        }
+    })
+
+
+
+    //Utility function for File reading
     const readUploadedFileAsText = (inputFile) => {
         const temporaryFileReader = new FileReader();
 
@@ -104,6 +151,7 @@
         }
     }
 
+    //Variable regarding shaders
     let fragmentSource;
     let vertexSource;
     let objFile;
@@ -113,13 +161,12 @@
         target.value = null;
     }
 
-
+    //Subscribe to input events
     let vertexInput = document.getElementById("vertex-shader");
     vertexInput.addEventListener("click", (ev) => clearInput(ev.target));
     vertexInput.addEventListener("input", (ev) => {
         handleUpload(ev).then(res => {
             vertexSource = res;
-
         });
     });
 

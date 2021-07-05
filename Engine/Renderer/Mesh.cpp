@@ -22,7 +22,6 @@ Mesh* Mesh::MeshFromObj(std::string& meshData){
     std::vector<float> meshUvCoordsData;
     std::vector<unsigned> meshIndiciesData;
 
-
     std::map <FaceIndexTriplet, unsigned int> mappedTriplets;
 
     std::vector<float> pVertices;

@@ -3570,6 +3570,26 @@ var ASM_CONSTS = {
       });
     }
 
+
+  function __emval_incref(handle) {
+      if (handle > 4) {
+          emval_handle_array[handle].refcount += 1;
+      }
+    }
+
+  function requireRegisteredType(rawType, humanName) {
+      var impl = registeredTypes[rawType];
+      if (undefined === impl) {
+          throwBindingError(humanName + " has unknown type " + getTypeName(rawType));
+      }
+      return impl;
+    }
+  function __emval_take_value(type, argv) {
+      type = requireRegisteredType(type, '_emval_take_value');
+      var v = type['readValueFromPointer'](argv);
+      return __emval_register(v);
+    }
+
   function _abort() {
       abort();
     }
@@ -6633,6 +6653,8 @@ var ASM_CONSTS = {
       GLctx.bindBuffer(target, GL.buffers[buffer]);
     }
 
+  function _glBlendFunc(x0, x1) { GLctx['blendFunc'](x0, x1) }
+
   function _glBufferData(target, size, data, usage) {
   
       if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
@@ -6675,6 +6697,8 @@ var ASM_CONSTS = {
       return id;
     }
 
+  function _glCullFace(x0) { GLctx['cullFace'](x0) }
+
   function _glDeleteShader(id) {
       if (!id) return;
       var shader = GL.shaders[id];
@@ -6711,11 +6735,15 @@ var ASM_CONSTS = {
       }
     }
 
+  function _glEnable(x0) { GLctx['enable'](x0) }
+
   function _glEnableVertexAttribArray(index) {
       var cb = GL.currentContext.clientBuffers[index];
       cb.enabled = true;
       GLctx.enableVertexAttribArray(index);
     }
+
+  function _glFrontFace(x0) { GLctx['frontFace'](x0) }
 
   function __glGenObject(n, buffers, createFunction, objectTable
       ) {
@@ -6885,8 +6913,45 @@ var ASM_CONSTS = {
       // Else an already cached WebGLUniformLocation, return it.
       return webglLoc;
     }
-  function _glUniform1f(location, v0) {
-      GLctx.uniform1f(webglGetUniformLocation(location), v0);
+  
+  var miniTempWebGLFloatBuffers=[];
+  function _glUniformMatrix4fv(location, count, transpose, value) {
+  
+      if (GL.currentContext.version >= 2) { // WebGL 2 provides new garbage-free entry points to call to WebGL. Use those always when possible.
+        GLctx.uniformMatrix4fv(webglGetUniformLocation(location), !!transpose, HEAPF32, value>>2, count*16);
+        return;
+      }
+  
+      if (count <= 18) {
+        // avoid allocation when uploading few enough uniforms
+        var view = miniTempWebGLFloatBuffers[16*count-1];
+        // hoist the heap out of the loop for size and for pthreads+growth.
+        var heap = HEAPF32;
+        value >>= 2;
+        for (var i = 0; i < 16 * count; i += 16) {
+          var dst = value + i;
+          view[i] = heap[dst];
+          view[i + 1] = heap[dst + 1];
+          view[i + 2] = heap[dst + 2];
+          view[i + 3] = heap[dst + 3];
+          view[i + 4] = heap[dst + 4];
+          view[i + 5] = heap[dst + 5];
+          view[i + 6] = heap[dst + 6];
+          view[i + 7] = heap[dst + 7];
+          view[i + 8] = heap[dst + 8];
+          view[i + 9] = heap[dst + 9];
+          view[i + 10] = heap[dst + 10];
+          view[i + 11] = heap[dst + 11];
+          view[i + 12] = heap[dst + 12];
+          view[i + 13] = heap[dst + 13];
+          view[i + 14] = heap[dst + 14];
+          view[i + 15] = heap[dst + 15];
+        }
+      } else
+      {
+        var view = HEAPF32.subarray((value)>>2, (value+count*64)>>2);
+      }
+      GLctx.uniformMatrix4fv(webglGetUniformLocation(location), !!transpose, view);
     }
 
   function _glUseProgram(program) {
@@ -7339,6 +7404,11 @@ var FSNode = /** @constructor */ function(parent, name, mode, rdev) {
   });
   FS.FSNode = FSNode;
   FS.staticInit();;
+var miniTempWebGLFloatBuffersStorage = new Float32Array(288);
+  for (/**@suppress{duplicate}*/var i = 0; i < 288; ++i) {
+  miniTempWebGLFloatBuffers[i] = miniTempWebGLFloatBuffersStorage.subarray(0, i+1);
+  }
+  ;
 var ASSERTIONS = true;
 
 
@@ -7386,6 +7456,9 @@ var asmLibraryArg = {
   "_embind_register_std_string": __embind_register_std_string,
   "_embind_register_std_wstring": __embind_register_std_wstring,
   "_embind_register_void": __embind_register_void,
+  "_emval_decref": __emval_decref,
+  "_emval_incref": __emval_incref,
+  "_emval_take_value": __emval_take_value,
   "abort": _abort,
   "emscripten_memcpy_big": _emscripten_memcpy_big,
   "emscripten_resize_heap": _emscripten_resize_heap,
@@ -7399,15 +7472,19 @@ var asmLibraryArg = {
   "fd_write": _fd_write,
   "glAttachShader": _glAttachShader,
   "glBindBuffer": _glBindBuffer,
+  "glBlendFunc": _glBlendFunc,
   "glBufferData": _glBufferData,
   "glClear": _glClear,
   "glClearColor": _glClearColor,
   "glCompileShader": _glCompileShader,
   "glCreateProgram": _glCreateProgram,
   "glCreateShader": _glCreateShader,
+  "glCullFace": _glCullFace,
   "glDeleteShader": _glDeleteShader,
   "glDrawElements": _glDrawElements,
+  "glEnable": _glEnable,
   "glEnableVertexAttribArray": _glEnableVertexAttribArray,
+  "glFrontFace": _glFrontFace,
   "glGenBuffers": _glGenBuffers,
   "glGetAttribLocation": _glGetAttribLocation,
   "glGetShaderInfoLog": _glGetShaderInfoLog,
@@ -7415,7 +7492,7 @@ var asmLibraryArg = {
   "glGetUniformLocation": _glGetUniformLocation,
   "glLinkProgram": _glLinkProgram,
   "glShaderSource": _glShaderSource,
-  "glUniform1f": _glUniform1f,
+  "glUniformMatrix4fv": _glUniformMatrix4fv,
   "glUseProgram": _glUseProgram,
   "glValidateProgram": _glValidateProgram,
   "glVertexAttribPointer": _glVertexAttribPointer,

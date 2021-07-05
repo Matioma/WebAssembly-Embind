@@ -1,6 +1,7 @@
 #include "Material.hpp"
 #include <iostream>
 
+
 Material::Material(std::string &vertexSource, std::string &fragmentSource){
     this->createProgram(vertexSource, fragmentSource);
 }

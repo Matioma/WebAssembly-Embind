@@ -12,7 +12,8 @@ filesToCompile=(
 "./Engine/Renderer/RendererAPI.cpp" 
 "./Engine/Renderer/Material.cpp"
 "./Engine/Renderer/Mesh.cpp" 
-"./Engine/Math/Vector3.cpp")
+"./Engine/Math/Vector3.cpp"
+"./Engine/Math/Matrix4.cpp")
 
 
 t="emcc --bind -o ${output_directory}${output_fileName} ${filesToCompile[*]} -s ALLOW_MEMORY_GROWTH=1 -s USE_WEBGL2=1 -s FULL_ES3=1 -s WASM=1 -s NO_EXIT_RUNTIME=1 -std=c++1z"

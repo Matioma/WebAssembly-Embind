@@ -20,6 +20,15 @@ class Matrix4{
         Matrix4(const Matrix4& mat);
 
         static Matrix4 Identity();
+        static Matrix4 ScaleMatrix(float x, float y, float z);
+        static Matrix4 RotationX(float degrees);
+        static Matrix4 RotationY(float degrees);
+        static Matrix4 RotationZ(float degrees);
+
+        float* getValues();
+
+
+
 
 
 

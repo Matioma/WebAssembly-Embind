@@ -1,5 +1,6 @@
 #include "Renderer.hpp"
 #include <math.h> 
+#include "../Math/Matrix4.hpp"
 
 Renderer::Renderer (int w, int h, std::string id) {
     width = w;
@@ -27,8 +28,6 @@ Renderer::~Renderer (void) {
 
 void Renderer::LoadMaterial(std::string &vertexSource, std::string &fragmentSource){
     std::cout<<"Loading a new Material \n" <<std::endl;
-    // std::cout<<vertexSource <<std::endl;
-    // std::cout<<fragmentSource <<std::endl;
     if(this->material != nullptr){
         std::cout<<"old material still here, deleting" <<std::endl;
         delete this->material;
@@ -44,24 +43,54 @@ void Renderer::LoadMeshData(std::string &meshData){
 void Renderer::Draw (float deltaTime) {
     emscripten_webgl_make_context_current(context);
     this->deltaTime = deltaTime;
-    // std::cout<<deltaTime<<std::endl;
+
+    glEnable(GL_DEPTH_TEST);
+
+	//tell opengl which vertex winding is considered to be front facing
+	glFrontFace(GL_CCW);
+
+	//tell opengl to enable face culling for the back faces
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	//set the default blend mode aka dark magic:
+	//https://www.opengl.org/sdk/docs/man/html/glBlendFunc.xhtml
+    //https://www.opengl.org/wiki/Blending
+    //http://www.informit.com/articles/article.aspx?p=1616796&seqNum=5
+    //http://www.andersriggelsen.dk/glblendfunc.php
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+
+
     DrawMesh(*mesh);
 }
 
 void Renderer::DrawMesh(Mesh& mesh){
     emscripten_webgl_make_context_current(context);
 
-    timer += deltaTime;
+    rotationX -= deltaTime*10;
+    rotationY += deltaTime*10;
 
-
-
-    
     this->material->Use();
 
-    float scale = sin(timer);
-    glUniform1f(this->material->getUniformLoaction("scale"),scale);
+    Matrix4 translation(Vector3(1,0,0),Vector3(0,1,0), Vector3(0,0,1), Vector3(0,0,0));
+    Matrix4 scale = Matrix4::ScaleMatrix(0.5,0.5,0.5);
+
+    Matrix4 RotateX = Matrix4::RotationX(rotationX);
+    Matrix4 RotateY = Matrix4::RotationY(rotationY);
+    Matrix4 RotateZ = Matrix4::RotationZ(rotationZ);
+
+    Matrix4 Model = translation*RotateY*RotateX*RotateZ*scale;
+
+    // float scale = sin(timer);
+    // glUniform1f(this->material->getUniformLoaction("scale"),scale);
+    // float* matrixArray = mat.getValues();
+    glUniformMatrix4fv(this->material->getUniformLoaction("modelMatrix"),1,false, &Model.getValues()[0]);
 
 
     mesh.StreamToOpenGL(

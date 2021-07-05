@@ -1,4 +1,12 @@
 #include "./Matrix4.hpp"
+#include <math.h> 
+
+#define PI 3.14159265
+float DegreeToRadians(float degrees){
+    return (degrees*PI/180.0);
+}
+
+
 
 Matrix4::Matrix4(const Vector3& v1,const Vector3& v2, const Vector3& v3, const Vector3& v4){
     this->vectorValues.push_back(v1.x);
@@ -16,7 +24,7 @@ Matrix4::Matrix4(const Vector3& v1,const Vector3& v2, const Vector3& v3, const V
     this->vectorValues.push_back(0);
     this->vectorValues.push_back(0);
     this->vectorValues.push_back(0);
-    this->vectorValues.push_back(0);
+    this->vectorValues.push_back(1);
 }
 
 Matrix4::Matrix4(const Matrix4& mat){
@@ -36,6 +44,11 @@ Matrix4::Matrix4(std::vector<float> values){
         this->vectorValues.push_back(0);
         counter++;
     }
+}
+
+float*  Matrix4::getValues(){
+    float* a = &vectorValues[0];
+    return a;
 }
 
 
@@ -65,6 +78,49 @@ Matrix4 Matrix4::Identity(){
     matrix.vectorValues[5] = 1;
     matrix.vectorValues[10] = 1;
     matrix.vectorValues[15] =1;
+    return matrix;
+}
+
+Matrix4 Matrix4::ScaleMatrix(float x, float y, float z){
+    Matrix4 matrix = Matrix4::Identity();
+    matrix.vectorValues[0] =x;
+    matrix.vectorValues[5] =y;
+    matrix.vectorValues[10] =z;
+    return matrix;
+}
+
+
+Matrix4 Matrix4::RotationX(float degrees){
+    Matrix4 matrix = Matrix4::Identity();
+    float radians = DegreeToRadians(degrees);
+    matrix.vectorValues[5] = cos(radians);
+    matrix.vectorValues[6] = -sin(radians);
+
+    matrix.vectorValues[9] = sin(radians);
+    matrix.vectorValues[10] = cos(radians);
+    return matrix;
+}
+
+Matrix4 Matrix4::RotationY(float degrees){
+    Matrix4 matrix = Matrix4::Identity();
+    
+    float radians = DegreeToRadians(degrees);
+    matrix.vectorValues[0] = cos(radians);
+    matrix.vectorValues[2] = sin(radians);
+
+    matrix.vectorValues[8] = -sin(radians);
+    matrix.vectorValues[10] = cos(radians);
+    return matrix;
+}
+Matrix4 Matrix4::RotationZ(float degrees){
+    Matrix4 matrix = Matrix4::Identity();
+
+    float radians = DegreeToRadians(degrees);
+    matrix.vectorValues[0] = cos(radians);
+    matrix.vectorValues[1] = -sin(radians);
+
+    matrix.vectorValues[4] = sin(radians);
+    matrix.vectorValues[5] = cos(radians);
     return matrix;
 }
 

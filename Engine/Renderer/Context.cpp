@@ -1,8 +1,5 @@
 #include "Context.h"
 
-
-
-
 Context::Context (int w, int h, std::string id) {
     width = w;
     height = h;
@@ -46,42 +43,16 @@ void Context::LoadMeshData(std::string &meshData){
 
 
 void Context::run () {
+    emscripten_webgl_make_context_current(context);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
     
     DrawMesh(*mesh);
-    // glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    // glClear(GL_COLOR_BUFFER_BIT);
-    // // // Make the context current and use the program
-    // emscripten_webgl_make_context_current(context);
-
-    // unsigned int VBO;
-    // glGenBuffers(1, &VBO);  
-    // glBindBuffer(GL_ARRAY_BUFFER, VBO);  
-    // glBufferData(GL_ARRAY_BUFFER,sizeof(vertices),vertices,GL_STATIC_DRAW);
-
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    // glEnableVertexAttribArray(0);  
-    // // glUseProgram(programObject);
-    // this->material->Use();
-
-    // glDrawArrays(GL_TRIANGLES,0,sizeof(vertices));
 }
 
 void Context::DrawMesh(Mesh& mesh){
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    // // Make the context current and use the program
     emscripten_webgl_make_context_current(context);
 
-
-    // unsigned int VBO;
-    // glGenBuffers(1, &VBO);  
-    // glBindBuffer(GL_ARRAY_BUFFER, VBO);  
-    // glBufferData(GL_ARRAY_BUFFER,sizeof(vertices),vertices,GL_STATIC_DRAW);
-
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    // glEnableVertexAttribArray(0);
-   
-    // glUseProgram(programObject);
 
     this->material->Use();
     mesh.StreamToOpenGL(
@@ -90,5 +61,4 @@ void Context::DrawMesh(Mesh& mesh){
         this->material->getAttribLocation("aUV")
     );
 
-    // glDrawArrays(GL_TRIANGLES,0,sizeof(vertices));
 }

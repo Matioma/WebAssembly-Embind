@@ -20,6 +20,9 @@ Renderer::Renderer (int w, int h, std::string id) {
 
     context = emscripten_webgl_create_context(sharp_id_str.c_str(), &attrs);
     emscripten_webgl_make_context_current(context);
+
+
+    _scale = Vector3(1,1,1);
 }
 
 Renderer::~Renderer (void) {
@@ -46,18 +49,11 @@ void Renderer::Draw (float deltaTime) {
 
     glEnable(GL_DEPTH_TEST);
 
-	//tell opengl which vertex winding is considered to be front facing
 	glFrontFace(GL_CCW);
 
-	//tell opengl to enable face culling for the back faces
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	//set the default blend mode aka dark magic:
-	//https://www.opengl.org/sdk/docs/man/html/glBlendFunc.xhtml
-    //https://www.opengl.org/wiki/Blending
-    //http://www.informit.com/articles/article.aspx?p=1616796&seqNum=5
-    //http://www.andersriggelsen.dk/glblendfunc.php
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
@@ -73,16 +69,13 @@ void Renderer::Draw (float deltaTime) {
 void Renderer::DrawMesh(Mesh& mesh){
     emscripten_webgl_make_context_current(context);
 
-    // _rotationSpeed.x = 10;
-    // _rotationSpeed.y =10;
-
     this->_rotation =this->_rotation+(_rotationSpeed* deltaTime);
 
 
     this->material->Use();
 
     Matrix4 translation(Vector3(1,0,0),Vector3(0,1,0), Vector3(0,0,1), Vector3(0,0,0));
-    Matrix4 scale = Matrix4::ScaleMatrix(0.5,0.5,0.5);
+    Matrix4 scale = Matrix4::ScaleMatrix(_scale.x,_scale.y,_scale.z);
 
     Matrix4 RotateX = Matrix4::RotationX(_rotation.x);
     Matrix4 RotateY = Matrix4::RotationY(_rotation.y);
@@ -103,6 +96,10 @@ void Renderer::DrawMesh(Mesh& mesh){
 
 void Renderer::SetRotation(Vector3 pRotation){
     this->_rotation = pRotation;
+}
+
+void Renderer::SetScale(Vector3 pScale){
+    this->_scale = pScale;
 }
 
 void Renderer::SetRotationSpeed(Vector3 pRotationSpeed){

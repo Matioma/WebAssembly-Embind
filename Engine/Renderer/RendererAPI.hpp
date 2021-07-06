@@ -23,4 +23,5 @@ class RenderAPI{
 
 
         void SetRotationSpeed(float x, float y, float z);
+        void SetScale(float x, float y, float z);
 };

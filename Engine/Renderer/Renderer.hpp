@@ -15,6 +15,7 @@ public:
     void DrawMesh(Mesh& mesh);
 
     void SetRotation(Vector3 rotation);
+    void SetScale(Vector3 scale);
     void SetRotationSpeed(Vector3 rotationSpeed);
 private:
     float deltaTime=0;
@@ -25,6 +26,7 @@ private:
     float rotationZ=0;
 
     Vector3 _rotation;
+    Vector3 _scale;
     Vector3 _rotationSpeed;
 
 

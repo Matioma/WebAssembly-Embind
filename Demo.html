@@ -49,6 +49,32 @@
 
 
             <div class="uk-container-expand uk-margin-top">
+                <div class="uk-container">
+                    <label>Scale</label>
+                    <form name="scaleF" class="uk-grid-small uk-form-stacked" uk-grid>
+                        <div>
+                            <div class="uk-inline">
+                                <span class="uk-form-icon"> X:</span>
+                                <input id="fScaleX" class="uk-input" type="number" placeholder="1" value=1>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="uk-inline">
+                                <span class="uk-form-icon"> Y:</span>
+                                <input id="fScaleY" class="uk-input" type="number" placeholder="1" value=1>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="uk-inline">
+                                <span class="uk-form-icon"> Z:</span>
+                                <input id="fScaleZ" class="uk-input" type="number" placeholder="1" value=1>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+
+
                 <label>Rotation Speed</label>
                 <form name="rotationSpeed" class="uk-grid-small uk-form-stacked" uk-grid>
                     <div>
@@ -70,7 +96,7 @@
                         </div>
                     </div>
                 </form>
-                <button id="UpdateModelBtn" class="uk-button uk-button-primary">Update values</button>
+                <!-- <button id="UpdateModelBtn" class="uk-button uk-button-primary">Update values</button> -->
             </div>
 
         </div>
@@ -137,28 +163,58 @@
         startRenderer();
     })
 
+
+    let scaleX = 1;
+    let scaleY = 1;
+    let scaleZ = 1;
+
+    document.getElementById("fScaleX").addEventListener("input", (e) => {
+        scaleX = parseFloat(e.target.value);
+        Renderer.SetScale(scaleX, scaleY, scaleZ);
+    })
+    document.getElementById("fScaleY").addEventListener("input", (e) => {
+        scaleY = parseFloat(e.target.value);
+        Renderer.SetScale(scaleX, scaleY, scaleZ);
+    })
+    document.getElementById("fScaleZ").addEventListener("input", (e) => {
+        scaleZ = parseFloat(e.target.value);
+        Renderer.SetScale(scaleX, scaleY, scaleZ);
+    })
+
+
+
     let rotationSpeedX = 0;
     let rotationSpeedY = 0;
     let rotationSpeedZ = 0;
 
-    document.getElementById("fRotSpeedX").addEventListener("change", (e) => {
+    document.getElementById("fRotSpeedX").addEventListener("input", (e) => {
         rotationSpeedX = parseFloat(e.target.value);
+        if (isNaN(rotationSpeedX)) return;
+        Renderer.SetRotationSpeed(rotationSpeedX, rotationSpeedY, rotationSpeedZ);
     })
-    document.getElementById("fRotSpeedY").addEventListener("change", (e) => {
+    document.getElementById("fRotSpeedY").addEventListener("input", (e) => {
         rotationSpeedY = parseFloat(e.target.value);
+        if (isNaN(rotationSpeedY)) return;
+        Renderer.SetRotationSpeed(rotationSpeedX, rotationSpeedY, rotationSpeedZ);
     })
-    document.getElementById("fRotSpeedZ").addEventListener("change", (e) => {
+    document.getElementById("fRotSpeedZ").addEventListener("input", (e) => {
         rotationSpeedZ = parseFloat(e.target.value);
+        if (isNaN(rotationSpeedZ)) return;
+        Renderer.SetRotationSpeed(rotationSpeedX, rotationSpeedY, rotationSpeedZ);
     })
 
-    function updateModel() {
-        Renderer.SetRotationSpeed(rotationSpeedX, rotationSpeedY, rotationSpeedZ);
-    }
-    document.getElementById("UpdateModelBtn").addEventListener("click", () => {
-        updateModel();
-    })
+    // function updateModel() {
+
+    //     // Renderer.SetScale(scaleX, scaleY, scaleZ);
+    // }
+    // document.getElementById("UpdateModelBtn").addEventListener("click", () => {
+    //     updateModel();
+    // })
 </script>
 <script src="FileFunctions.js"></script>
+
+
+
 
 <script>
     //Variable regarding shaders

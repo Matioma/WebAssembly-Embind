@@ -23,7 +23,10 @@ void RenderAPI::Update(float deltaTime){
 
 void RenderAPI::SetRotationSpeed(float x, float y, float z){
     this->context->SetRotationSpeed(Vector3(x,y,z));
-
+}
+void RenderAPI::SetScale(float x, float y, float z){
+    this->context->SetScale(Vector3(x,y,z));
+    std::cout<<x<< ": "<<y<< ":"<<z <<std::endl;
 }
 
 EMSCRIPTEN_BINDINGS(renderer){
@@ -33,5 +36,6 @@ EMSCRIPTEN_BINDINGS(renderer){
     .function("Update",&RenderAPI::Update)
     .function("LoadMaterial",&RenderAPI::LoadMaterial)
     .function("LoadMeshData", &RenderAPI::LoadMeshData)
-    .function("SetRotationSpeed",&RenderAPI::SetRotationSpeed);
+    .function("SetRotationSpeed",&RenderAPI::SetRotationSpeed)
+    .function("SetScale",&RenderAPI::SetScale);
 }

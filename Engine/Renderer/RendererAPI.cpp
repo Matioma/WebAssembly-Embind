@@ -21,6 +21,10 @@ void RenderAPI::Update(float deltaTime){
     this->context->Draw(deltaTime);
 }
 
+void RenderAPI::SetRotationSpeed(float x, float y, float z){
+    this->context->SetRotationSpeed(Vector3(x,y,z));
+
+}
 
 EMSCRIPTEN_BINDINGS(renderer){
     class_<RenderAPI>("RendererAPI")
@@ -28,5 +32,6 @@ EMSCRIPTEN_BINDINGS(renderer){
     .function("CreateContext", &RenderAPI::CreateContext)
     .function("Update",&RenderAPI::Update)
     .function("LoadMaterial",&RenderAPI::LoadMaterial)
-    .function("LoadMeshData", &RenderAPI::LoadMeshData);
+    .function("LoadMeshData", &RenderAPI::LoadMeshData)
+    .function("SetRotationSpeed",&RenderAPI::SetRotationSpeed);
 }

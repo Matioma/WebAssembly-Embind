@@ -20,4 +20,7 @@ class RenderAPI{
         void LoadMaterial(std::string vertexSource, std::string fragmentSource);
         void LoadMeshData(std::string meshData);
         void Update(float deltaTime);
+
+
+        void SetRotationSpeed(float x, float y, float z);
 };

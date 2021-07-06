@@ -13,6 +13,9 @@ public:
     void LoadMaterial(std::string &vertexSource, std::string &fragmentSource);
     void LoadMeshData(std::string &meshData);
     void DrawMesh(Mesh& mesh);
+
+    void SetRotation(Vector3 rotation);
+    void SetRotationSpeed(Vector3 rotationSpeed);
 private:
     float deltaTime=0;
     float timer =0;
@@ -20,6 +23,10 @@ private:
     float rotationX=0;
     float rotationY=0;
     float rotationZ=0;
+
+    Vector3 _rotation;
+    Vector3 _rotationSpeed;
+
 
     Material* material;
     Mesh* mesh;

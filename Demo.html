@@ -13,7 +13,7 @@
 </head>
 
 <body>
-    <div class="uk-flex .uk-flex-center uk-container">
+    <div class="uk-flex .uk-flex-center uk-container uk-margin-top">
         <section id="canvasContainer">
         </section>
         <div class="uk-container">
@@ -43,8 +43,36 @@
             </div>
 
             <!-- <progress id="js-progressbar" class="uk-progress" value="0" max="100" hidden></progress> -->
-            <button id="RenderBtn" class="uk-button uk-button-primary">Render</button>
-            <button id="PauseRunBtn" class="uk-button uk-button-primary">Pause/Run</button>
+            <div class="uk-button-group">
+                <button id="RenderBtn" class="uk-button uk-button-primary">Render</button>
+            </div>
+
+
+            <div class="uk-container-expand uk-margin-top">
+                <label>Rotation Speed</label>
+                <form name="rotationSpeed" class="uk-grid-small uk-form-stacked" uk-grid>
+                    <div>
+                        <div class="uk-inline">
+                            <span class="uk-form-icon"> X:</span>
+                            <input id="fRotSpeedX" class="uk-input" type="number" placeholder="0">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="uk-inline">
+                            <span class="uk-form-icon"> Y:</span>
+                            <input id="fRotSpeedY" class="uk-input" type="number" placeholder="0">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="uk-inline">
+                            <span class="uk-form-icon"> Z:</span>
+                            <input id="fRotSpeedZ" class="uk-input" type="number" placeholder="0">
+                        </div>
+                    </div>
+                </form>
+                <button id="UpdateModelBtn" class="uk-button uk-button-primary">Update values</button>
+            </div>
+
         </div>
     </div>
 </body>
@@ -53,12 +81,6 @@
 <script src="./Utility/ExecutionTime.js"></script>
 
 <script>
-    let uiWorker = new Worker('./webInterface.js');
-    let engineWorker = new Worker("./EngineWorker.js");
-    // engineWorker.postMessage(document);
-    uiWorker.postMessage("cool");
-
-
     let Renderer;
     var Module = {
         onRuntimeInitialized: function () {
@@ -107,21 +129,34 @@
 
 
 
+
     document.getElementById("RenderBtn").addEventListener("click", () => {
         stopRenderer()
         Renderer.LoadMeshData(objFile);
         Renderer.LoadMaterial(vertexSource, fragmentSource);
         startRenderer();
     })
-    document.getElementById("PauseRunBtn").addEventListener("click", () => {
-        // isRunning = !isRunning;
-        if (!isRunning) {
-            startRenderer();
-        } else {
-            stopRenderer();
-        }
+
+    let rotationX = 0;
+    let rotationY = 0;
+    let rotationZ = 0;
+
+    document.getElementById("fRotSpeedX").addEventListener("change", (e) => {
+        rotationX = parseFloat(e.target.value);
+    })
+    document.getElementById("fRotSpeedY").addEventListener("change", (e) => {
+        rotationY = parseFloat(e.target.value);
+    })
+    document.getElementById("fRotSpeedZ").addEventListener("change", (e) => {
+        rotationZ = parseFloat(e.target.value);
     })
 
+    function updateModel() {
+        Renderer.SetRotationSpeed(rotationX, rotationY, rotationZ);
+    }
+    document.getElementById("UpdateModelBtn").addEventListener("click", () => {
+        updateModel();
+    })
 
 
     //Utility function for File reading

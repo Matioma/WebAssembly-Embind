@@ -73,23 +73,23 @@ void Renderer::Draw (float deltaTime) {
 void Renderer::DrawMesh(Mesh& mesh){
     emscripten_webgl_make_context_current(context);
 
-    rotationX -= deltaTime*10;
-    rotationY += deltaTime*10;
+    // _rotationSpeed.x = 10;
+    // _rotationSpeed.y =10;
+
+    this->_rotation =this->_rotation+(_rotationSpeed* deltaTime);
+
 
     this->material->Use();
 
     Matrix4 translation(Vector3(1,0,0),Vector3(0,1,0), Vector3(0,0,1), Vector3(0,0,0));
     Matrix4 scale = Matrix4::ScaleMatrix(0.5,0.5,0.5);
 
-    Matrix4 RotateX = Matrix4::RotationX(rotationX);
-    Matrix4 RotateY = Matrix4::RotationY(rotationY);
-    Matrix4 RotateZ = Matrix4::RotationZ(rotationZ);
+    Matrix4 RotateX = Matrix4::RotationX(_rotation.x);
+    Matrix4 RotateY = Matrix4::RotationY(_rotation.y);
+    Matrix4 RotateZ = Matrix4::RotationZ(_rotation.z);
 
     Matrix4 Model = translation*RotateY*RotateX*RotateZ*scale;
 
-    // float scale = sin(timer);
-    // glUniform1f(this->material->getUniformLoaction("scale"),scale);
-    // float* matrixArray = mat.getValues();
     glUniformMatrix4fv(this->material->getUniformLoaction("modelMatrix"),1,false, &Model.getValues()[0]);
 
 
@@ -99,4 +99,13 @@ void Renderer::DrawMesh(Mesh& mesh){
         this->material->getAttribLocation("aUV")
     );
 
+}
+
+void Renderer::SetRotation(Vector3 pRotation){
+    this->_rotation = pRotation;
+}
+
+void Renderer::SetRotationSpeed(Vector3 pRotationSpeed){
+    this->_rotationSpeed = pRotationSpeed;
+    std::cout<< pRotationSpeed.x << pRotationSpeed.y << pRotationSpeed.z <<std::endl;
 }
